@@ -1,0 +1,14 @@
+{
+  "categories": ["greetings", "praise", "questions", "banter", "emoji"],
+  "scenes": [],
+  "defaultWeights": {
+    "greetings": 30,
+    "praise": 25,
+    "questions": 20,
+    "banter": 15,
+    "emoji": 10,
+    "scene": 20
+  },
+  "classTitle": "ScienceCare Academic Aid",
+  "youtubeUrl": ""
+}

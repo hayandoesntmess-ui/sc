@@ -1,0 +1,19 @@
+/*
+ * Firebase configuration for ScienceCare Academic Aid.
+ *
+ * Copy this file to js/firebase-config.js and fill in the values from your
+ * Firebase project (Firebase console -> Project settings -> Your apps -> Web app).
+ *
+ * This file (js/firebase-config.js) is gitignored so your keys stay private.
+ * Leave SC_FIREBASE_CONFIG as null to run in demo mode (BroadcastChannel sync
+ * between tabs on the same device, no Firebase needed).
+ */
+window.SC_FIREBASE_CONFIG = {
+  apiKey: "your-api-key",
+  authDomain: "your-project.firebaseapp.com",
+  databaseURL: "https://your-project-default-rtdb.firebaseio.com",
+  projectId: "your-project",
+  storageBucket: "your-project.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "1:000000000000:web:xxxxxxxxxxxx"
+};

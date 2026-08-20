@@ -1,0 +1,12 @@
+# Local Firebase config (contains keys - never commit)
+js/firebase-config.js
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

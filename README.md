@@ -1,132 +1,117 @@
 # ScienceCare Academic Aid — Live Class Rig
 
-A local, no-internet-required rig for shooting a "live coaching class" scene:
-one device streams live video (the teacher), one device displays the styled
-platform UI with live chat (the phone being filmed), and a third device
-(hidden operator) controls everything.
+A web-based coaching/classroom platform built as a **production/filming tool**.
+One Android device shows the student-facing classroom page (the screen being
+filmed), while a separate admin/production device controls the simulated
+comments and reactions that appear on it. The live video comes from a real
+YouTube Live stream.
 
-No accounts, no cloud, no npm install. Just Node.js and one laptop on the
-same WiFi as the other two devices.
+There are no real students, no real viewers, no user accounts, and no database.
+Everything the viewer shows is a prop controlled by the operator.
 
----
+```
+Teacher/actor (Android camera) -> YouTube Live -> viewer device (filmed)
+Admin/production device       -> Firebase RTDB -> viewer device updates live
+```
 
-## 1. What you need
+## Architecture
 
-- A laptop with **Node.js** installed (v16+). Check with `node -v` in a
-  terminal. If not installed, get it from nodejs.org — one-time setup,
-  no internet needed on shoot day after that.
-- All three devices (broadcaster, viewer phone, admin device) on the
-  **same WiFi network** (a phone hotspot works fine too — connect the
-  laptop and other devices to it).
+- Two static pages: `index.html` (viewer, Android-app styled PWA) and
+  `admin.html` (production panel).
+- The comment/reaction simulation engine runs **in the viewer page**. The admin
+  only broadcasts control state (on/off, rate, weights, manual triggers), so a
+  network blip on the admin side never stops the show.
+- Realtime channel: **Firebase Realtime Database (free Spark plan)**, browser
+  SDK only. Without a Firebase config the app runs in **demo mode**
+  (BroadcastChannel sync between tabs on the same device) so you can test
+  everything locally first.
 
-## 2. Running it
+## Running locally (demo mode, no Firebase needed)
 
-1. Copy this whole folder onto the laptop.
-2. Open a terminal in this folder.
-3. Run:
-   ```
-   node server.js
-   ```
-4. You'll see a message with your local IP address instructions. Find your
-   laptop's actual local IP:
-   - **Windows:** open Command Prompt, run `ipconfig`, look for "IPv4 Address"
-     (something like `192.168.1.23`)
-   - **Mac:** System Settings → Wi-Fi → Details, or run `ifconfig` in Terminal
-   - **Linux:** run `ip a`
+Serve the folder over HTTP (ES modules + fetch require a server, not `file://`):
 
-5. On each device, open a browser to `http://<that-ip>:8080/<role>`:
-   - Teacher/actor's device → `http://192.168.1.23:8080/broadcaster`
-   - Filmed phone → `http://192.168.1.23:8080/viewer`
-   - Operator's device → `http://192.168.1.23:8080/admin`
+```bash
+python3 -m http.server 8080
+```
 
-   (Replace `192.168.1.23` with your laptop's real IP.)
+Then open two tabs on the same machine:
 
-6. On the broadcaster device, **allow camera and microphone access** when
-   prompted. A small dot in the top-left turns green once it's live and
-   connected to the viewer.
+- `http://localhost:8080/` — the viewer page
+- `http://localhost:8080/admin.html` — the production panel
 
-7. On the viewer phone, the video should appear within a few seconds.
-   That's the screen you film.
+Start comments from the admin panel; they appear on the viewer in real time.
 
-8. On the admin device, start firing chat categories and pin questions —
-   nothing here shows up on camera unless you're filming the operator's
-   screen, which you shouldn't be.
+## Firebase setup (real admin <-> viewer sync)
 
-## 3. Before each take
+1. Create a Firebase project at https://console.firebase.google.com
+2. Add a **Web app**; copy the config object.
+3. In Realtime Database, create a database (test mode is fine — the data here
+   is non-sensitive control state).
+4. Copy `js/firebase-config.js.example` to `js/firebase-config.js` and paste
+   your config values. This file is gitignored.
+5. Reload admin + viewer. The admin header shows "Firebase connected".
 
-Tap **"New take (reset)"** at the top of the admin panel. This clears the
-chat, un-pins any question, and resets the video connection so broadcaster
-and viewer reconnect cleanly. Do this once before every take to avoid stale
-chat carrying over.
+## YouTube Live setup (Android streaming)
 
-## 4. Editing content (no coding needed)
+- **Option A (channel has 50+ subscribers):** use the YouTube app's **Go Live**.
+- **Option B (under 50):** create a live event in YouTube Studio (web, on a
+  laptop) with a stream key, then push the Android camera to it with a free
+  RTMP app such as Larix Broadcaster.
+- Set the broadcast visibility to **Unlisted** and make sure **"Allow
+  embedding"** is ON.
+- In the admin panel set **YouTube embed URL or channel ID** to
+  `https://www.youtube.com/embed/live_stream?channel=CHANNEL_ID` (or just the
+  channel ID). The viewer embeds it automatically.
 
-Everything the chat says lives in plain `.txt` files in the `content/`
-folder. Edit with Notepad, TextEdit, or any plain text editor — save as
-**UTF-8** if you're using emojis or non-English characters (most editors
-default to this already).
+## Content editing (no code changes)
+
+All editable content lives in `content/`:
 
 ```
 content/
-  names.txt              one commenter name per line
-  highlighted.txt         one preset "top question" per line, format:
-                           Name | Question | Upvote count
+  names.txt               one commenter name per line
+  highlighted.txt          Name | Message | likes   (pinnable comments)
   categories/
-    greetings.txt         one comment line per line
+    greetings.txt          one comment per line
     praise.txt
     questions.txt
     banter.txt
-    (add more .txt files here — they show up as new buttons automatically)
+    (add more files here)
+  scenes/                  optional scene-specific comment pools
+    (scene).txt            one comment per line
+  manifest.json            lists categories + scenes, default weights, title
+  reactions.json           named emoji sets
 ```
 
-**Adding a new chat category:** just drop a new `.txt` file into
-`content/categories/` (e.g. `emojis.txt`) with one line per comment.
-Restart the server (`Ctrl+C` then `node server.js` again) or just reload
-the admin page — it picks up new files automatically. No code changes.
+- **Add a category:** create `content/categories/<name>.txt`, then add the name
+  to `"categories"` in `content/manifest.json`.
+- **Add a scene:** create `content/scenes/<name>.txt` and list it in
+  `manifest.json`; it becomes selectable in the admin panel.
+- **Swap the logo:** replace `assets/logo.jpg`.
+- Comment lines starting with `#` are ignored. Keep files UTF-8.
 
-**Swapping the logo:** replace `assets/logo.jpg` with your final logo
-(same filename, or update the path in `public/viewer/index.html` if you
-rename it).
+## Admin panel quick guide
 
-**Changing the class title / platform name:** open
-`public/viewer/index.html` and edit the text inside `.channel-name` and
-`#classTitle`.
+- **Class** — title, YouTube URL/channel, live viewer count, Start/Stop,
+  Pause/Resume, Clear chat.
+- **Comments** — per-minute rate and a weight slider per category; toggle
+  categories on/off.
+- **Reactions** — per-minute rate and emoji-set toggles.
+- **Scenes** — activate a scene comment pool (adds a "scene" weight).
+- **Manual triggers** — send a custom comment, random comment from a category,
+  reaction burst, pin/unpin a highlighted comment, clear chat.
+- **Live feed** — echoes what the viewer is currently showing.
 
-## 5. How the admin panel works
+## Hosting
 
-- **Categories** (Greetings, Praise, Questions, Banter, etc.) — each has
-  its own Quantity, Per-minute rate, and a Loop checkbox. Hit **Start** on
-  one category for a queued single-topic flood, or start two or three at
-  once and they'll blend together naturally in the viewer's chat.
-- **Top voted question** — tap **Pin** on a preset question, or type a
-  custom one and hit **Pin this**. Only one shows at a time on the viewer's
-  screen. **Dismiss pinned** clears it.
-- **Manual message** — fire one specific line on demand, useful for
-  reacting to something happening in the scene in the moment.
-- **Live feed preview** at the bottom mirrors what's being sent, so the
-  operator can track pacing without watching the viewer phone directly.
+Static pages can be hosted free on GitHub Pages / Cloudflare Pages / Netlify
+(no cold start, no sleeping). Realtime is Firebase free tier. No database.
 
-## 6. Troubleshooting
+## Filming notes
 
-- **Video not appearing on viewer:** confirm all three devices are on the
-  *same* WiFi network (not one on WiFi and one on mobile data). Hit reset
-  on the admin panel and reload the broadcaster and viewer pages.
-- **"Camera/mic error" on broadcaster:** the browser blocked camera access.
-  Check site permissions (usually a padlock/camera icon in the address bar)
-  and reload.
-- **Laptop's IP changed:** this can happen if you reconnect to WiFi. Re-run
-  `ipconfig` / `ifconfig` and use the new address on all three devices.
-- **Nothing loads at all:** make sure `node server.js` is still running in
-  the terminal — closing that terminal window stops the whole rig.
-
-## 7. Notes for post-production
-
-- The video shown to the viewer is the **live composited output** — what
-  the camera films off the phone screen is the actual final look, chat and
-  all. No separate compositing pass needed for the chat overlay.
-- If editorial also wants a clean isolated camera feed of the actor
-  (for reframing/regrading), that's a separate capture on production's
-  end — this rig only handles what's rendered inside the phone's screen.
-- Chat pacing is naturally non-identical take to take (since the operator
-  fires it live), which gives editorial real variation to choose between
-  without needing multiple pre-rendered versions.
+- The comments in `content/` are romanized Bangla (Latin script), so no
+  Bengali font dependency on the viewer device.
+- The viewer page requests a screen Wake Lock so the phone does not sleep
+  during a take.
+- Internet is required during filming (for the YouTube stream and realtime).
+  The service worker is network-first so content edits never go stale.
