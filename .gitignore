@@ -1,6 +1,3 @@
-# Local Firebase config (contains keys - never commit)
-js/firebase-config.js
-
 # Node
 node_modules/
 
