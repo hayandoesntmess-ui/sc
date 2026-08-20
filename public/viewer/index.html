@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ScienceCare Academic Aid — Live Class</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/viewer/style.css">
+</head>
+<body>
+
+  <div class="app">
+
+    <!-- VIDEO -->
+    <div class="stage">
+      <video id="remoteVideo" autoplay playsinline></video>
+      <div class="stage-overlay">
+        <span class="live-badge"><span class="live-dot"></span>LIVE</span>
+        <span class="viewer-count" id="viewerCount">1.2K watching</span>
+      </div>
+      <div class="stage-waiting" id="stageWaiting">
+        <span>Connecting to class…</span>
+      </div>
+    </div>
+
+    <!-- CHANNEL BAR -->
+    <div class="channel-bar">
+      <img class="logo" src="/assets/logo.jpg" alt="ScienceCare Academic Aid" onerror="this.style.visibility='hidden'">
+      <div class="channel-info">
+        <div class="channel-name">ScienceCare Academic Aid</div>
+        <div class="channel-sub" id="classTitle">HSC Physics — Chapter: Vector Mechanics</div>
+      </div>
+      <div class="channel-badge">Verified</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- PINNED HIGHLIGHT (hidden until admin pushes one) -->
+    <div class="pinned-wrap" id="pinnedWrap"></div>
+
+    <!-- COMMENTS -->
+    <div class="comments-head">
+      <span>Live chat</span>
+      <span class="comments-count" id="commentsCount">0 comments</span>
+    </div>
+    <div class="comments" id="comments"></div>
+
+  </div>
+
+  <script src="/viewer/app.js"></script>
+</body>
+</html>
