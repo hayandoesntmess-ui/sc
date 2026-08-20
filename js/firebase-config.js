@@ -4,7 +4,7 @@
 window.SC_FIREBASE_CONFIG = {
   apiKey: "AIzaSyD8GVk3hE6yFU4znfdWWgJf1GCQmfeJNso",
   authDomain: "quizchaos-99790.firebaseapp.com",
-  databaseURL: "https://quizchaos-99790-default-rtdb.firebaseio.com",
+  databaseURL: "https://quizchaos-99790-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "quizchaos-99790",
   storageBucket: "quizchaos-99790.firebasestorage.app",
   messagingSenderId: "471565182402",
